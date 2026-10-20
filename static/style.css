@@ -1,0 +1,203 @@
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: #30382d;
+  background: #f5f6ef;
+  font-family: sans-serif;
+  line-height: 1.7;
+}
+
+.container {
+  width: min(100% - 32px, 800px);
+  margin-inline: auto;
+}
+
+.header {
+  padding: 32px 0;
+  color: #fff;
+  background: #456b45;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.header p {
+  margin: 4px 0 0;
+}
+
+.header .eyebrow {
+  margin-bottom: 8px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+
+.main {
+  padding-block: 32px 56px;
+}
+
+.panel {
+  padding: 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgb(48 56 45 / 5%);
+}
+
+h2 {
+  margin: 0 0 20px;
+  font-size: 20px;
+}
+
+.record-form {
+  display: grid;
+  gap: 18px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+label,
+legend {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 11px 12px;
+  color: inherit;
+  font: inherit;
+  background: #fff;
+  border: 1px solid #d6dbd0;
+  border-radius: 6px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #456b45;
+  outline: 2px solid rgb(69 107 69 / 15%);
+}
+
+.harvest-field {
+  padding: 0;
+  border: 0;
+}
+
+.harvest-field legend {
+  margin-bottom: 6px;
+}
+
+.harvest-inputs {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 12px;
+}
+
+.submit-button {
+  padding: 12px 20px;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  background: #456b45;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  background: #355535;
+}
+
+.records-section {
+  margin-top: 36px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.record-count {
+  color: #697365;
+  font-size: 14px;
+}
+
+.record-list {
+  display: grid;
+  gap: 14px;
+}
+
+.record-card,
+.empty-state {
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #e5e8df;
+  border-radius: 10px;
+}
+
+.record-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: #697365;
+  font-size: 13px;
+}
+
+.vegetable-tag {
+  padding: 2px 10px;
+  color: #355535;
+  background: #eaf2e5;
+  border-radius: 20px;
+}
+
+.record-card h3 {
+  margin: 10px 0 4px;
+  font-size: 17px;
+}
+
+.record-memo,
+.harvest {
+  margin: 8px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.harvest {
+  color: #456b45;
+  font-size: 14px;
+}
+
+.empty-state {
+  color: #697365;
+  text-align: center;
+}
+
+.empty-state p {
+  margin: 4px 0;
+}
+
+@media (max-width: 480px) {
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .panel {
+    padding: 18px;
+  }
+}

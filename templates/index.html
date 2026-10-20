@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <p class="eyebrow">MY GARDEN JOURNAL</p>
+      <h1>{{ title }}</h1>
+      <p>育てる記録、収穫の記録。</p>
+    </div>
+  </header>
+
+  <main class="container main">
+    <section class="panel">
+      <h2>作業を記録する</h2>
+
+      <form action="/records" method="post" class="record-form">
+        <div class="field">
+          <label for="work_date">日付</label>
+          <input
+            type="date"
+            id="work_date"
+            name="work_date"
+            value="{{ today }}"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label for="vegetable">野菜</label>
+          <input
+            type="text"
+            id="vegetable"
+            name="vegetable"
+            placeholder="例：トマト"
+            maxlength="100"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label for="work">作業内容</label>
+          <input
+            type="text"
+            id="work"
+            name="work"
+            placeholder="例：水やり、種まき、収穫"
+            maxlength="100"
+            required
+          >
+        </div>
+
+        <div class="field">
+          <label for="memo">メモ</label>
+          <textarea
+            id="memo"
+            name="memo"
+            rows="3"
+            placeholder="野菜の様子や気づいたこと"
+          ></textarea>
+        </div>
+
+        <fieldset class="harvest-field">
+          <legend>収穫量（任意）</legend>
+          <div class="harvest-inputs">
+            <input
+              type="number"
+              id="harvest_amount"
+              name="harvest_amount"
+              min="0"
+              step="any"
+              placeholder="例：2"
+            >
+
+            <select id="harvest_unit" name="harvest_unit">
+              <option value="">単位なし</option>
+              <option value="個">個</option>
+              <option value="本">本</option>
+              <option value="g">g</option>
+              <option value="kg">kg</option>
+              <option value="袋">袋</option>
+            </select>
+          </div>
+        </fieldset>
+
+        <button type="submit" class="submit-button">
+          記録を保存する
+        </button>
+      </form>
+    </section>
+
+    <section class="records-section">
+      <div class="section-heading">
+        <h2>記録一覧</h2>
+        <span class="record-count">{{ records|length }}件</span>
+      </div>
+
+      {% if records %}
+        <div class="record-list">
+          {% for record in records %}
+            <article class="record-card">
+              <div class="record-meta">
+                <time datetime="{{ record.work_date.isoformat() }}">
+                  {{ record.work_date.strftime("%Y年%m月%d日") }}
+                </time>
+                <span class="vegetable-tag">{{ record.vegetable }}</span>
+              </div>
+
+              <h3>{{ record.work }}</h3>
+
+              {% if record.memo %}
+                <p class="record-memo">{{ record.memo }}</p>
+              {% endif %}
+
+              {% if record.harvest_amount is not none %}
+                <p class="harvest">
+                  収穫量：
+                  {{ record.harvest_amount }}{{ record.harvest_unit or "" }}
+                </p>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <p>まだ記録がありません。</p>
+          <p>最初の作業を記録してみましょう。</p>
+        </div>
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>

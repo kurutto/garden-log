@@ -17,7 +17,7 @@ body {
 }
 
 .header {
-  padding: 32px 0;
+  padding: 28px 0;
   color: #fff;
   background: #456b45;
 }
@@ -38,6 +38,8 @@ body {
 }
 
 .main {
+  display: grid;
+  gap: 28px;
   padding-block: 32px 56px;
 }
 
@@ -55,7 +57,7 @@ h2 {
 
 .record-form {
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .field {
@@ -63,8 +65,7 @@ h2 {
   gap: 6px;
 }
 
-label,
-legend {
+label {
   font-size: 14px;
   font-weight: 600;
 }
@@ -73,12 +74,17 @@ input,
 textarea,
 select {
   width: 100%;
-  padding: 11px 12px;
+  min-width: 0;
+  padding: 10px 12px;
   color: inherit;
   font: inherit;
   background: #fff;
   border: 1px solid #d6dbd0;
   border-radius: 6px;
+}
+
+input[readonly] {
+  background: #f4f5f1;
 }
 
 textarea {
@@ -92,22 +98,23 @@ select:focus {
   outline: 2px solid rgb(69 107 69 / 15%);
 }
 
-.harvest-field {
-  padding: 0;
-  border: 0;
+small {
+  color: #697365;
+  font-size: 12px;
 }
 
-.harvest-field legend {
-  margin-bottom: 6px;
+small[hidden] {
+  display: none;
 }
 
 .harvest-inputs {
   display: grid;
-  grid-template-columns: 1fr 120px;
+  grid-template-columns: minmax(0, 1fr) 120px;
   gap: 12px;
 }
 
-.submit-button {
+.submit-button,
+.secondary-button {
   padding: 12px 20px;
   color: #fff;
   font: inherit;
@@ -118,12 +125,19 @@ select:focus {
   cursor: pointer;
 }
 
-.submit-button:hover {
+.submit-button:hover,
+.secondary-button:hover {
   background: #355535;
 }
 
+.management {
+  display: grid;
+  gap: 28px;
+}
+
 .records-section {
-  margin-top: 36px;
+  display: grid;
+  gap: 16px;
 }
 
 .section-heading {
@@ -131,6 +145,10 @@ select:focus {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.section-heading h2 {
+  margin: 0;
 }
 
 .record-count {
@@ -167,20 +185,47 @@ select:focus {
   border-radius: 20px;
 }
 
-.record-card h3 {
-  margin: 10px 0 4px;
-  font-size: 17px;
+.history-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.history-item {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #edf0e8;
+}
+
+.history-item strong {
+  font-size: 14px;
 }
 
 .record-memo,
 .harvest {
-  margin: 8px 0 0;
+  margin: 4px 0 0;
   overflow-wrap: anywhere;
 }
 
 .harvest {
   color: #456b45;
   font-size: 14px;
+}
+
+.total-harvest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px;
+  color: #355535;
+  background: #eaf2e5;
+  border-radius: 6px;
+}
+
+.total-harvest span {
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .empty-state {
@@ -200,4 +245,63 @@ select:focus {
   .panel {
     padding: 18px;
   }
+
+  .harvest-inputs {
+    grid-template-columns: minmax(0, 1fr) 100px;
+    gap: 8px;
+  }
 }
+
+/* 野菜ごとの記録カード */
+.record-card {
+  padding: 16px 20px;
+  border: 1px solid #d0d0d0;
+  border-radius: 11px;
+  box-shadow: none;
+}
+
+.vegetable-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* 作業履歴 */
+.history-item {
+  margin: 0;
+}
+
+.history-title,
+.history-detail {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.history-detail {
+  padding-left: 0;
+}
+
+/* 総収穫量 */
+.total-harvest {
+  display: block;
+  margin-top: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border-radius: 0;
+}
+
+.total-harvest p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.record-list {
+  gap: 24px;
+}
+

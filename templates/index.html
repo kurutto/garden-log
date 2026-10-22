@@ -23,63 +23,47 @@
       <form action="/records" method="post" class="record-form">
         <div class="field">
           <label for="work_date">日付</label>
-          <input
-            type="date"
-            id="work_date"
-            name="work_date"
-            value="{{ today }}"
-            required
-          >
+          <input type="date" id="work_date" name="work_date"
+                 value="{{ today }}" required>
         </div>
 
         <div class="field">
-          <label for="vegetable">野菜</label>
-          <input
-            type="text"
-            id="vegetable"
-            name="vegetable"
-            placeholder="例：トマト"
-            maxlength="100"
-            required
-          >
+          <label for="vegetable_id">名前</label>
+          <select id="vegetable_id" name="vegetable_id" required>
+            <option value="">野菜を選択してください</option>
+            {% for vegetable in vegetables %}
+              <option value="{{ vegetable.id }}"
+                      data-area="{{ vegetable.area }}">
+                {{ vegetable.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="area_display">エリア</label>
+          <input type="text" id="area_display" readonly
+                 placeholder="野菜を選ぶと表示されます">
         </div>
 
         <div class="field">
           <label for="work">作業内容</label>
-          <input
-            type="text"
-            id="work"
-            name="work"
-            placeholder="例：水やり、種まき、収穫"
-            maxlength="100"
-            required
-          >
+          <select id="work" name="work" required>
+            <option value="">作業内容を選択してください</option>
+            {% for item in work_types %}
+              <option value="{{ item.name }}">{{ item.name }}</option>
+            {% endfor %}
+          </select>
         </div>
 
         <div class="field">
-          <label for="memo">メモ</label>
-          <textarea
-            id="memo"
-            name="memo"
-            rows="3"
-            placeholder="野菜の様子や気づいたこと"
-          ></textarea>
-        </div>
-
-        <fieldset class="harvest-field">
-          <legend>収穫量（任意）</legend>
+          <label for="harvest_amount">数量</label>
           <div class="harvest-inputs">
-            <input
-              type="number"
-              id="harvest_amount"
-              name="harvest_amount"
-              min="0"
-              step="any"
-              placeholder="例：2"
-            >
-
+            <input type="number" id="harvest_amount" name="harvest_amount"
+                   min="0" step="any" placeholder="数量">
             <select id="harvest_unit" name="harvest_unit">
-              <option value="">単位なし</option>
+              <option value="">単位</option>
+              <option value="株">株</option>
               <option value="個">個</option>
               <option value="本">本</option>
               <option value="g">g</option>
@@ -87,53 +71,123 @@
               <option value="袋">袋</option>
             </select>
           </div>
-        </fieldset>
+          <small id="quantity-help">
+            収穫を選択した場合は数量を入力してください。
+          </small>
+        </div>
 
-        <button type="submit" class="submit-button">
-          記録を保存する
-        </button>
+        <div class="field">
+          <label for="memo">メモ</label>
+          <textarea id="memo" name="memo" rows="3"></textarea>
+        </div>
+
+        <button type="submit" class="submit-button">登録</button>
       </form>
     </section>
 
-    <section class="records-section">
-      <div class="section-heading">
-        <h2>記録一覧</h2>
-        <span class="record-count">{{ records|length }}件</span>
-      </div>
+    <section class="panel management">
+      <h2>野菜の新規登録・エリア変更</h2>
+      <form action="/vegetables" method="post" class="record-form">
+        <div class="field">
+          <label for="new_vegetable">名前</label>
+          <input id="new_vegetable" name="name" maxlength="100" required>
+        </div>
+        <div class="field">
+          <label for="new_area">エリア</label>
+          <input id="new_area" name="area" maxlength="100" required>
+        </div>
+        <button type="submit" class="secondary-button">野菜を登録</button>
+      </form>
 
-      {% if records %}
-        <div class="record-list">
-          {% for record in records %}
-            <article class="record-card">
-              <div class="record-meta">
-                <time datetime="{{ record.work_date.isoformat() }}">
-                  {{ record.work_date.strftime("%Y年%m月%d日") }}
-                </time>
-                <span class="vegetable-tag">{{ record.vegetable }}</span>
-              </div>
+      <h2>作業内容の新規登録</h2>
+      <form action="/work-types" method="post" class="record-form">
+        <div class="field">
+          <label for="new_work">作業内容</label>
+          <input id="new_work" name="name" maxlength="100"
+                 placeholder="例：支柱立て" required>
+        </div>
+        <button type="submit" class="secondary-button">作業内容を登録</button>
+      </form>
+    </section>
 
-              <h3>{{ record.work }}</h3>
+    
+<section class="records-section">
+  <div class="section-heading">
+    <h2>記録一覧</h2>
+    <span class="record-count">{{ grouped_records|length }}種類</span>
+  </div>
+
+  {% if grouped_records %}
+    <div class="record-list">
+      {% for group in grouped_records %}
+        <article class="record-card">
+          <h3 class="vegetable-title">{{ group.vegetable.name }}</h3>
+
+          {% for record in group.records %}
+            <div class="history-item">
+              <p class="history-title">
+                {{ record.work }}：{{ record.work_date.strftime("%Y/%m/%d") }}
+              </p>
 
               {% if record.memo %}
-                <p class="record-memo">{{ record.memo }}</p>
+                <p class="history-detail">
+                  {{ record.work }}メモ：{{ record.memo }}
+                </p>
               {% endif %}
 
               {% if record.harvest_amount is not none %}
-                <p class="harvest">
-                  収穫量：
-                  {{ record.harvest_amount }}{{ record.harvest_unit or "" }}
+                <p class="history-detail">
+                  {{ record.work }}数量：
+                  {{ record.harvest_amount|int if record.harvest_amount == record.harvest_amount|int else record.harvest_amount }}{{ record.harvest_unit or "" }}
                 </p>
               {% endif %}
-            </article>
+            </div>
           {% endfor %}
-        </div>
-      {% else %}
-        <div class="empty-state">
-          <p>まだ記録がありません。</p>
-          <p>最初の作業を記録してみましょう。</p>
-        </div>
-      {% endif %}
-    </section>
+
+          {% if group.harvest_totals %}
+            <div class="total-harvest">
+              {% for unit, total in group.harvest_totals.items() %}
+                <p>
+                  総収穫量：
+                  {{ total|int if total == total|int else total }}{{ "" if unit == "単位なし" else unit }}
+                </p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>まだ記録がありません。</p>
+      <p>野菜を登録して、最初の作業を記録しましょう。</p>
+    </div>
+  {% endif %}
+</section>
+
   </main>
+
+  <script>
+    const vegetableSelect = document.getElementById("vegetable_id");
+    const areaDisplay = document.getElementById("area_display");
+    const workSelect = document.getElementById("work");
+    const amountInput = document.getElementById("harvest_amount");
+    const unitSelect = document.getElementById("harvest_unit");
+    const quantityHelp = document.getElementById("quantity-help");
+
+    vegetableSelect.addEventListener("change", () => {
+      const option = vegetableSelect.selectedOptions[0];
+      areaDisplay.value = option?.dataset.area || "";
+    });
+
+    function updateQuantityField() {
+      const isHarvest = workSelect.value === "収穫";
+      amountInput.required = isHarvest;
+      quantityHelp.hidden = !isHarvest;
+    }
+
+    workSelect.addEventListener("change", updateQuantityField);
+    updateQuantityField();
+  </script>
 </body>
 </html>

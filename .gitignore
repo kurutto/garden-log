@@ -22,3 +22,6 @@ venv/
 
 # Memo
 memo.txt
+
+# Backup
+*_backup.*

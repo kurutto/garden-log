@@ -121,6 +121,9 @@
     <div class="record-list">
       {% for group in grouped_records %}
         <article class="record-card">
+          <form action="/vegetables/{{ group.vegetable.id }}/delete" method="post" onsubmit="return confirm('この野菜の記録をすべて削除しますか？');">
+            <button type="submit" class="btn-delete">×</button>
+          </form>
           <h3 class="vegetable-title">{{ group.vegetable.name }}</h3>
 
           {% for record in group.records %}

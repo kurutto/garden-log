@@ -57,7 +57,10 @@ class Vegetable(Base):
     area: Mapped[str] = mapped_column(String(100), default="", nullable=False)
 
     records: Mapped[list["GardenRecord"]] = relationship(
-        back_populates="vegetable_info"
+        back_populates="vegetable_info",
+        cascade="all, delete",
+        passive_deletes=True
+
     )
 
 
@@ -79,7 +82,7 @@ class GardenRecord(Base):
 
     # 新しい野菜テーブルとの関連
     vegetable_id: Mapped[int | None] = mapped_column(
-        ForeignKey("vegetables.id"),
+        ForeignKey("vegetables.id",ondelete="CASCADE"),
         nullable=True,
     )
 
@@ -303,3 +306,13 @@ def create_record(
     db.commit()
 
     return RedirectResponse(url="/", status_code=303)
+
+@app.post("/vegetables/{vegetable_id}/delete")
+def delete_vegetable(vegetable_id: int,db: Session = Depends(get_db)):
+    vegetable = db.get(Vegetable, vegetable_id)
+    if vegetable is None:
+        raise HTTPException(status_code=400, detail="データがありません。")
+    db.delete(vegetable)
+    db.commit()
+    return RedirectResponse(url="/", status_code=303)
+

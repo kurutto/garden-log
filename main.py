@@ -1,4 +1,3 @@
-
 from datetime import date
 from pathlib import Path
 
@@ -57,10 +56,7 @@ class Vegetable(Base):
     area: Mapped[str] = mapped_column(String(100), default="", nullable=False)
 
     records: Mapped[list["GardenRecord"]] = relationship(
-        back_populates="vegetable_info",
-        cascade="all, delete",
-        passive_deletes=True
-
+        back_populates="vegetable_info", cascade="all, delete", passive_deletes=True
     )
 
 
@@ -82,7 +78,7 @@ class GardenRecord(Base):
 
     # 新しい野菜テーブルとの関連
     vegetable_id: Mapped[int | None] = mapped_column(
-        ForeignKey("vegetables.id",ondelete="CASCADE"),
+        ForeignKey("vegetables.id", ondelete="CASCADE"),
         nullable=True,
     )
 
@@ -91,9 +87,7 @@ class GardenRecord(Base):
     harvest_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
     harvest_unit: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
-    vegetable_info: Mapped[Vegetable | None] = relationship(
-        back_populates="records"
-    )
+    vegetable_info: Mapped[Vegetable | None] = relationship(back_populates="records")
 
 
 def migrate_database():
@@ -101,8 +95,7 @@ def migrate_database():
     Base.metadata.create_all(bind=engine)
 
     columns = {
-        column["name"]
-        for column in inspect(engine).get_columns("garden_records")
+        column["name"] for column in inspect(engine).get_columns("garden_records")
     }
 
     if "vegetable_id" not in columns:
@@ -123,9 +116,7 @@ def migrate_database():
             if not name:
                 continue
 
-            vegetable = db.scalar(
-                select(Vegetable).where(Vegetable.name == name)
-            )
+            vegetable = db.scalar(select(Vegetable).where(Vegetable.name == name))
 
             if vegetable is None:
                 vegetable = Vegetable(name=name, area="")
@@ -136,9 +127,11 @@ def migrate_database():
                 record.vegetable_id = vegetable.id
 
             work_name = record.work.strip()
-            if work_name and db.scalar(
-                select(WorkType).where(WorkType.name == work_name)
-            ) is None:
+            if (
+                work_name
+                and db.scalar(select(WorkType).where(WorkType.name == work_name))
+                is None
+            ):
                 db.add(WorkType(name=work_name))
 
         db.commit()
@@ -157,17 +150,14 @@ def get_db():
 
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request, db: Session = Depends(get_db)):
-    vegetables = db.scalars(
-        select(Vegetable).order_by(Vegetable.name)
-    ).all()
+    vegetables = db.scalars(select(Vegetable).order_by(Vegetable.name)).all()
 
-    work_types = db.scalars(
-        select(WorkType).order_by(WorkType.name)
-    ).all()
+    work_types = db.scalars(select(WorkType).order_by(WorkType.name)).all()
 
     records = db.scalars(
-        select(GardenRecord)
-        .order_by(GardenRecord.work_date.desc(), GardenRecord.id.desc())
+        select(GardenRecord).order_by(
+            GardenRecord.work_date.desc(), GardenRecord.id.desc()
+        )
     ).all()
 
     # 野菜ごとに作業記録をまとめる
@@ -175,13 +165,9 @@ def read_root(request: Request, db: Session = Depends(get_db)):
 
     for vegetable in vegetables:
         vegetable_records = sorted(
-    [
-        record
-        for record in records
-        if record.vegetable_id == vegetable.id
-    ],
-    key=lambda record: (record.work_date, record.id),
-)
+            [record for record in records if record.vegetable_id == vegetable.id],
+            key=lambda record: (record.work_date, record.id),
+        )
 
         if not vegetable_records:
             continue
@@ -194,9 +180,7 @@ def read_root(request: Request, db: Session = Depends(get_db)):
                 continue
 
             unit = record.harvest_unit or "単位なし"
-            harvest_totals[unit] = (
-                harvest_totals.get(unit, 0) + record.harvest_amount
-            )
+            harvest_totals[unit] = harvest_totals.get(unit, 0) + record.harvest_amount
 
         grouped_records.append(
             {
@@ -231,9 +215,7 @@ def create_vegetable(
     if not name or not area:
         raise HTTPException(status_code=400, detail="名前とエリアは必須です。")
 
-    existing = db.scalar(
-        select(Vegetable).where(Vegetable.name == name)
-    )
+    existing = db.scalar(select(Vegetable).where(Vegetable.name == name))
 
     if existing:
         existing.area = area
@@ -251,9 +233,7 @@ def create_work_type(
 ):
     name = name.strip()
 
-    if name and db.scalar(
-        select(WorkType).where(WorkType.name == name)
-    ) is None:
+    if name and db.scalar(select(WorkType).where(WorkType.name == name)) is None:
         db.add(WorkType(name=name))
         db.commit()
 
@@ -307,8 +287,9 @@ def create_record(
 
     return RedirectResponse(url="/", status_code=303)
 
+
 @app.post("/vegetables/{vegetable_id}/delete")
-def delete_vegetable(vegetable_id: int,db: Session = Depends(get_db)):
+def delete_vegetable(vegetable_id: int, db: Session = Depends(get_db)):
     vegetable = db.get(Vegetable, vegetable_id)
     if vegetable is None:
         raise HTTPException(status_code=400, detail="データがありません。")
@@ -316,3 +297,25 @@ def delete_vegetable(vegetable_id: int,db: Session = Depends(get_db)):
     db.commit()
     return RedirectResponse(url="/", status_code=303)
 
+
+@app.post("/vegetables/{vegetable_id}/records")
+async def update_vegetable(
+    vegetable_id: int, request: Request, db: Session = Depends(get_db)
+):
+    form_data = await request.form()
+    rids = form_data.getlist("record_id")
+    for rid in rids:
+        record = db.get(GardenRecord, int(rid))
+        if record is None or record.vegetable_id != vegetable_id:
+            raise HTTPException(status_code=400, detail="不正な記録が含まれています。")
+
+        if f"work_date_{rid}" in form_data:
+            record.work_date = date.fromisoformat(form_data[f"work_date_{rid}"])
+        if f"memo_{rid}" in form_data:
+            record.memo = form_data[f"memo_{rid}"].strip()
+        if f"harvest_amount_{rid}" in form_data:
+            record.harvest_amount = float(form_data[f"harvest_amount_{rid}"]) or None
+        if f"harvest_unit_{rid}" in form_data:
+            record.harvest_unit = form_data[f"harvest_unit_{rid}"] or None
+    db.commit()
+    return RedirectResponse(url="/", status_code=303)

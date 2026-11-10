@@ -203,6 +203,17 @@ def read_root(request: Request, db: Session = Depends(get_db)):
     )
 
 
+@app.get("/farm", response_class=HTMLResponse)
+def read_farm(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="farm.html",
+        context={
+            "title": "家庭菜園の記録 - 農場区画情報",
+        },
+    )
+
+
 @app.post("/vegetables")
 def create_vegetable(
     name: str = Form(...),

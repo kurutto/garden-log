@@ -122,7 +122,7 @@
   const createElem = (index, left, top, right, bottom) => {
     rects[index] = {};
     rects[index].rect = createSVGElement("rect");
-    rects[index].rect.setAttribute("data-id", "0");
+    rects[index].rect.setAttribute("data-id", index);
     farm.appendChild(rects[0].rect);
 
     rects[index].left = left;
@@ -134,10 +134,10 @@
     rects[index].drugPointRT = createDrugPoint();
     rects[index].drugPointLB = createDrugPoint();
     rects[index].drugPointRB = createDrugPoint();
-    rects[index].drugPointLT.setAttribute("data-id", "0");
-    rects[index].drugPointRT.setAttribute("data-id", "0");
-    rects[index].drugPointLB.setAttribute("data-id", "0");
-    rects[index].drugPointRB.setAttribute("data-id", "0");
+    rects[index].drugPointLT.setAttribute("data-id", index);
+    rects[index].drugPointRT.setAttribute("data-id", index);
+    rects[index].drugPointLB.setAttribute("data-id", index);
+    rects[index].drugPointRB.setAttribute("data-id", index);
   };
   generateBtn.addEventListener("click", () => {
     farmContainer.innerHTML = "";

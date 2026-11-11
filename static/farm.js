@@ -89,6 +89,56 @@
       isDragging = false;
     });
   };
+  const onObjDrug = (obj) => {
+    setupDrag(obj.drugPointLT, (event) => drugPointMove(obj, event, "LT"));
+    setupDrag(obj.drugPointRT, (event) => drugPointMove(obj, event, "RT"));
+    setupDrag(obj.drugPointLB, (event) => drugPointMove(obj, event, "LB"));
+    setupDrag(obj.drugPointRB, (event) => drugPointMove(obj, event, "RB"));
+
+    setupDrag(obj.rect, (event) => {
+      const point = getSVGPoint(event, farm);
+      if (!obj.previousPoint) {
+        obj.previousPoint = point;
+        return;
+      }
+      let dx = point.x - obj.previousPoint.x;
+      let dy = point.y - obj.previousPoint.y;
+
+      dx = clamp(dx, -obj.left, width - obj.right);
+      dy = clamp(dy, -obj.top, height - obj.bottom);
+
+      obj.left += dx;
+      obj.right += dx;
+      obj.top += dy;
+      obj.bottom += dy;
+
+      obj.previousPoint = point;
+      updateVertices(obj);
+      obj.rect.addEventListener("pointerup", () => {
+        obj.previousPoint = undefined;
+      });
+    });
+  };
+  const createElem = (index, left, top, right, bottom) => {
+    rects[index] = {};
+    rects[index].rect = createSVGElement("rect");
+    rects[index].rect.setAttribute("data-id", "0");
+    farm.appendChild(rects[0].rect);
+
+    rects[index].left = left;
+    rects[index].top = top;
+    rects[index].right = right;
+    rects[index].bottom = bottom;
+
+    rects[index].drugPointLT = createDrugPoint();
+    rects[index].drugPointRT = createDrugPoint();
+    rects[index].drugPointLB = createDrugPoint();
+    rects[index].drugPointRB = createDrugPoint();
+    rects[index].drugPointLT.setAttribute("data-id", "0");
+    rects[index].drugPointRT.setAttribute("data-id", "0");
+    rects[index].drugPointLB.setAttribute("data-id", "0");
+    rects[index].drugPointRB.setAttribute("data-id", "0");
+  };
   generateBtn.addEventListener("click", () => {
     farmContainer.innerHTML = "";
     // フォームに入力された値を元にsvg要素を生成する
@@ -97,62 +147,14 @@
     farm.setAttribute("viewBox", `0 0 ${width} ${height}`);
 
     //　四角形とドラックポイントの箱を用意する
-    rects[0] = {};
-    rects[0].rect = createSVGElement("rect");
-    rects[0].rect.setAttribute("data-id", "0");
-    farm.appendChild(rects[0].rect);
-
-    rects[0].left = 10;
-    rects[0].top = 10;
-    rects[0].right = width - 10;
-    rects[0].bottom = height - 10;
-
-    rects[0].drugPointLT = createDrugPoint();
-    rects[0].drugPointRT = createDrugPoint();
-    rects[0].drugPointLB = createDrugPoint();
-    rects[0].drugPointRB = createDrugPoint();
-    rects[0].drugPointLT.setAttribute("data-id", "0");
-    rects[0].drugPointRT.setAttribute("data-id", "0");
-    rects[0].drugPointLB.setAttribute("data-id", "0");
-    rects[0].drugPointRB.setAttribute("data-id", "0");
+    createElem(0, 10, 10, width - 10, height - 10);
 
     farmContainer.appendChild(farm);
 
     // 初期表示
     updateVertices(rects[0]);
-    setupDrag(rects[0].drugPointLT, (event) =>
-      drugPointMove(rects[0], event, "LT"),
-    );
-    setupDrag(rects[0].drugPointRT, (event) =>
-      drugPointMove(rects[0], event, "RT"),
-    );
-    setupDrag(rects[0].drugPointLB, (event) =>
-      drugPointMove(rects[0], event, "LB"),
-    );
-    setupDrag(rects[0].drugPointRB, (event) =>
-      drugPointMove(rects[0], event, "RB"),
-    );
 
-    setupDrag(rects[0].rect, (event) => {
-      const point = getSVGPoint(event, farm);
-      if (!rects[0].previousPoint) {
-        rects[0].previousPoint = point;
-        return;
-      }
-      let dx = point.x - rects[0].previousPoint.x;
-      let dy = point.y - rects[0].previousPoint.y;
-
-      dx = clamp(dx, -rects[0].left, width - rects[0].right);
-      dy = clamp(dy, -rects[0].top, height - rects[0].bottom);
-
-      rects[0].left += dx;
-      rects[0].right += dx;
-      rects[0].top += dy;
-      rects[0].bottom += dy;
-
-      rects[0].previousPoint = point;
-      updateVertices(rects[0]);
-    });
+    onObjDrug(rects[0]);
   });
 
   let createRectDragging = false;
@@ -165,57 +167,29 @@
     const point = getSVGPoint(e, farm);
     lt = [point.x, point.y];
     index = rects.length;
-    rects[index] = {};
   });
   farm.addEventListener("pointermove", (e) => {
     if (!createRectDragging) return;
-    const rectObj = rects[index];
     const point = getSVGPoint(e, farm);
     if (!isRectCreated) {
-      rectObj.rect = createSVGElement("rect");
-      rectObj.rect.setAttribute("data-id", index);
-      rectObj.drugPointLT = createDrugPoint();
-      rectObj.drugPointRT = createDrugPoint();
-      rectObj.drugPointLB = createDrugPoint();
-      rectObj.drugPointRB = createDrugPoint();
-      rectObj.left = lt[0];
-      rectObj.right = clamp(point.x, lt[0], width);
-      rectObj.top = lt[1];
-      rectObj.bottom = clamp(point.y, lt[1], height);
+      createElem(
+        index,
+        lt[0],
+        lt[1],
+        clamp(point.x, lt[0], width),
+        clamp(point.y, lt[1], height),
+      );
+      const rectObj = rects[index];
       updateVertices(rectObj);
 
       farm.appendChild(rectObj.rect);
       isRectCreated = true;
-      setupDrag(rectObj.drugPointLT, (e) => drugPointMove(rectObj, e, "LT"));
-      setupDrag(rectObj.drugPointRT, (e) => drugPointMove(rectObj, e, "RT"));
-      setupDrag(rectObj.drugPointLB, (e) => drugPointMove(rectObj, e, "LB"));
-      setupDrag(rectObj.drugPointRB, (e) => drugPointMove(rectObj, e, "RB"));
-
-      setupDrag(rectObj.rect, (e) => {
-        const point = getSVGPoint(e, farm);
-        if (!rectObj.previousPoint) {
-          rectObj.previousPoint = point;
-          return;
-        }
-        let dx = point.x - rectObj.previousPoint.x;
-        let dy = point.y - rectObj.previousPoint.y;
-
-        dx = clamp(dx, -rectObj.left, width - rectObj.right);
-        dy = clamp(dy, -rectObj.top, height - rectObj.bottom);
-
-        rectObj.left += dx;
-        rectObj.right += dx;
-        rectObj.top += dy;
-        rectObj.bottom += dy;
-
-        rectObj.previousPoint = point;
-        updateVertices(rectObj);
-      });
+      onObjDrug(rectObj);
     }
 
-    rectObj.right = clamp(point.x, lt[0], width);
-    rectObj.bottom = clamp(point.y, lt[1], height);
-    updateVertices(rectObj);
+    rects[index].right = clamp(point.x, lt[0], width);
+    rects[index].bottom = clamp(point.y, lt[1], height);
+    updateVertices(rects[index]);
   });
   farm.addEventListener("pointerup", (e) => {
     if (!createRectDragging) return;

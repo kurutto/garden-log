@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ title }}</title>
     <link rel="stylesheet" href="/static/style.css" />
+    <link rel="stylesheet" href="/static/modal.css" />
+    <link rel="stylesheet" href="/static/farm.css" />
   </head>
   <body>
     <header class="header">
@@ -102,7 +104,16 @@
       </section>
 
       <section class="panel management">
+        <h2>畑新規登録</h2>
+<button type="submit" class="secondary-button js-modal-link-item" data-modal-id="js-farm-modal-box">畑を追加</button>
         <h2>野菜の新規登録・エリア変更</h2>
+
+          <a
+            href=""
+            class="js-modal-link-item"
+            data-modal-id="js-farm-modal-box"
+            >動画で詳しく</a
+          >
         <form action="/vegetables" method="post" class="record-form">
           <div class="field">
             <label for="new_vegetable">名前</label>
@@ -253,6 +264,21 @@
       </section>
     </main>
 
+      <div
+        class="modal-box js-modal-box"
+        id="js-farm-modal-box"
+      >
+        <div class="farmArea">
+          <p>畑名：<input type="text" name="farm_name" id="farmName" required /></p>
+          <p>横：<input type="number" name="horizontal" id="farmWidth" /></p>
+          <p>縦：<input type="number" name="vertical" id="farmHeight" /></p>
+          <button id="generateBtn">生成</button>
+          <div id="farmContainer"></div>
+          <button type="button" class="secondary-button" id="addFarmBtn">追加</button>
+        </div>
+      </div>
+
+      <div class="overlay js-overlay"></div>
     <script>
       const vegetableSelect = document.getElementById("vegetable_id");
       const areaDisplay = document.getElementById("area_display");
@@ -277,5 +303,7 @@
     </script>
 
     <script src="/static/script.js"></script>
+    <!-- <script src="/static/modal.js"></script> -->
+    <script type="module" src="/static/farm.js"></script>
   </body>
 </html>

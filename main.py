@@ -1,5 +1,7 @@
 from datetime import date
 from pathlib import Path
+from pydantic import BaseModel
+from sqlalchemy import JSON
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -24,6 +26,13 @@ from sqlalchemy.orm import (
     relationship,
     sessionmaker,
 )
+from models import (
+    Base,
+    Vegetable,
+    WorkType,
+    GardenRecord,
+    FarmSVG,
+)
 
 app = FastAPI()
 
@@ -42,52 +51,6 @@ SessionLocal = sessionmaker(
     autoflush=False,
     expire_on_commit=False,
 )
-
-
-class Base(DeclarativeBase):
-    pass
-
-
-class Vegetable(Base):
-    __tablename__ = "vegetables"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    area: Mapped[str] = mapped_column(String(100), default="", nullable=False)
-
-    records: Mapped[list["GardenRecord"]] = relationship(
-        back_populates="vegetable_info", cascade="all, delete", passive_deletes=True
-    )
-
-
-class WorkType(Base):
-    __tablename__ = "work_types"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-
-
-class GardenRecord(Base):
-    __tablename__ = "garden_records"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    work_date: Mapped[date] = mapped_column(Date, nullable=False)
-
-    # 既存データとの互換性のため、従来の文字列カラムを残す
-    vegetable: Mapped[str] = mapped_column(String(100), nullable=False)
-
-    # 新しい野菜テーブルとの関連
-    vegetable_id: Mapped[int | None] = mapped_column(
-        ForeignKey("vegetables.id", ondelete="CASCADE"),
-        nullable=True,
-    )
-
-    work: Mapped[str] = mapped_column(String(100), nullable=False)
-    memo: Mapped[str] = mapped_column(Text, default="", nullable=False)
-    harvest_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
-    harvest_unit: Mapped[str | None] = mapped_column(String(20), nullable=True)
-
-    vegetable_info: Mapped[Vegetable | None] = relationship(back_populates="records")
 
 
 def migrate_database():
@@ -138,6 +101,16 @@ def migrate_database():
 
 
 migrate_database()
+
+
+class SVGDataSchema(BaseModel):
+    viewBox: str
+    elements: list[dict]
+
+
+class FarmSchema(BaseModel):
+    farmName: str
+    svgData: SVGDataSchema
 
 
 def get_db():
@@ -212,6 +185,17 @@ def read_farm(request: Request):
             "title": "家庭菜園の記録 - 農場区画情報",
         },
     )
+
+
+@app.post("/farm")
+def create_farm(data: FarmSchema, db: Session = Depends(get_db)):
+    farm_data = FarmSVG(farm_name=data.farmName, svg_data=data.svgData.model_dump())
+
+    db.add(farm_data)
+    db.commit()
+    db.refresh(farm_data)
+
+    return {"id": farm_data.id}
 
 
 @app.post("/vegetables")
@@ -330,3 +314,10 @@ async def update_vegetable(
             record.harvest_unit = form_data[f"harvest_unit_{rid}"] or None
     db.commit()
     return RedirectResponse(url="/", status_code=303)
+
+
+inspector = inspect(engine)
+
+print(inspector.get_table_names())
+print(inspector.get_columns("farm_svg"))
+print(engine.url)

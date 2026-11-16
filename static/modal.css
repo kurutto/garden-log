@@ -1,0 +1,99 @@
+@charset "utf-8";
+body.js-modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100vw;
+}
+.modal-open {
+  overflow: visible;
+}
+.modal-box {
+  display: none;
+  box-sizing: border-box;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(1800px, 93.75%);
+  max-height: 90%;
+  z-index: 80;
+  background-color: #fff;
+  overflow: scroll;
+}
+.modal-box.js-open {
+  display: flex;
+  flex-direction: column;
+  animation: appearModal 0.5s ease-in;
+  z-index: 200;
+  transition: opacity 0.5s ease-out;
+}
+.modal-box.js-open.fade-out {
+  opacity: 0;
+}
+.modal-box .modal-close {
+  position: absolute;
+  top: -3.464vw;
+  right: 0;
+  cursor: pointer;
+  transition: background-color 0.5s ease-in;
+  width: 3.125vw;
+  height: 3.125vw;
+}
+.modal-box .modal-close::after,
+.modal-box .modal-close::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4.17vw;
+  height: 0.3125vw;
+  border-radius: 0.156vw;
+  background-color: var(--color-txt-inverse);
+}
+.modal-box .modal-close::after {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.modal-box .modal-close::before {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  z-index: 90;
+}
+.overlay.js-open {
+  display: block;
+  animation: appearOverlay 0.5s ease-in forwards;
+}
+.overlay.js-open.fade-out {
+  animation: hideOverlay 0.5s ease-in forwards;
+}
+@keyframes appearModal {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes appearOverlay {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+@keyframes hideOverlay {
+  0% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}

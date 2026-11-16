@@ -304,4 +304,6 @@ small[hidden] {
 .record-list {
   gap: 24px;
 }
-
+.farm{
+  padding: 4vw;
+}

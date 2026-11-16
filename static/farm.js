@@ -1,9 +1,15 @@
+import { modal } from "./modal.js";
 (function () {
+  const modalItem = document.querySelector(".js-modal-link-item");
+  const closeTxt = "*";
+  const { modalClose } = modal(modalItem, closeTxt);
+  // const modalClose = modal(modalItem, "");
   const generateBtn = document.getElementById("generateBtn");
   const farmContainer = document.getElementById("farmContainer");
   const createSVGElement = (tag) => {
     return document.createElementNS("http://www.w3.org/2000/svg", tag);
   };
+  let currentObjIdx = undefined;
 
   const farm = createSVGElement("svg");
   let width = 0;
@@ -79,6 +85,7 @@
     drugPoint.addEventListener("pointerdown", (event) => {
       isDragging = true;
       drugPoint.setPointerCapture(event.pointerId);
+      currentObjIdx = drugPoint.dataset.id;
     });
     drugPoint.addEventListener("pointermove", (event) => {
       if (!isDragging) return;
@@ -161,14 +168,38 @@
   let isRectCreated = false;
   let lt = [10, 10];
   let index;
+  let pressTimer;
   farm.addEventListener("pointerdown", (e) => {
-    if (e.target !== farm) return;
-    createRectDragging = true;
-    const point = getSVGPoint(e, farm);
-    lt = [point.x, point.y];
-    index = rects.length;
+    if (e.target !== farm) {
+      pressTimer = setTimeout(() => {
+        const deleteArea = confirm("削除しますか");
+        if (deleteArea) {
+          const deleteId = e.target.dataset.id;
+          console.log(deleteId);
+          rects.splice(deleteId, 1);
+          const deleteItems = farm.querySelectorAll(`[data-id="${deleteId}"]`);
+          deleteItems.forEach((item) => item.remove());
+        } else {
+          return;
+        }
+      }, 1000);
+    } else {
+      createRectDragging = true;
+      const point = getSVGPoint(e, farm);
+      lt = [point.x, point.y];
+      index = rects.length;
+    }
+  });
+
+  farm.addEventListener("pointerleave", () => {
+    clearTimeout(pressTimer);
+  });
+
+  farm.addEventListener("pointercancel", () => {
+    clearTimeout(pressTimer);
   });
   farm.addEventListener("pointermove", (e) => {
+    clearTimeout(pressTimer);
     if (!createRectDragging) return;
     const point = getSVGPoint(e, farm);
     if (!isRectCreated) {
@@ -192,6 +223,7 @@
     updateVertices(rects[index]);
   });
   farm.addEventListener("pointerup", (e) => {
+    clearTimeout(pressTimer);
     if (!createRectDragging) return;
     createRectDragging = false;
     isRectCreated = false;
@@ -201,4 +233,34 @@
     }
     index = undefined;
   });
+
+  const addFarm = () => {
+    const farmName = document.querySelector("#farmName");
+    const farmNameValue = farmName.value;
+    // const svg = farm.querySelector("svg");
+    const svgData = {
+      viewBox: farm.getAttribute("viewBox"),
+      elements: [...farm.querySelectorAll("rect, circle")].map((elem) => {
+        const attributes = {};
+        [...elem.attributes].forEach((attr) => {
+          attributes[attr.name] = attr.value;
+        });
+        return { tag: elem.tagName, attributes };
+      }),
+    };
+    const data = {
+      farmName: farmNameValue,
+      svgData,
+    };
+    fetch("/farm", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    modalClose();
+  };
+  const addFarmBtn = document.getElementById("addFarmBtn");
+  addFarmBtn.addEventListener("click", addFarm);
 })();

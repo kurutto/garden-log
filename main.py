@@ -2,6 +2,7 @@ from datetime import date
 from pathlib import Path
 from pydantic import BaseModel
 from sqlalchemy import JSON
+import uuid
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -53,56 +54,6 @@ SessionLocal = sessionmaker(
 )
 
 
-def migrate_database():
-    """既存の作業記録を残しながら、新しいテーブル構成へ移行する。"""
-    Base.metadata.create_all(bind=engine)
-
-    columns = {
-        column["name"] for column in inspect(engine).get_columns("garden_records")
-    }
-
-    if "vegetable_id" not in columns:
-        with engine.begin() as connection:
-            connection.execute(
-                text(
-                    "ALTER TABLE garden_records "
-                    "ADD COLUMN vegetable_id INTEGER "
-                    "REFERENCES vegetables(id)"
-                )
-            )
-
-    with SessionLocal() as db:
-        records = db.scalars(select(GardenRecord)).all()
-
-        for record in records:
-            name = record.vegetable.strip()
-            if not name:
-                continue
-
-            vegetable = db.scalar(select(Vegetable).where(Vegetable.name == name))
-
-            if vegetable is None:
-                vegetable = Vegetable(name=name, area="")
-                db.add(vegetable)
-                db.flush()
-
-            if record.vegetable_id is None:
-                record.vegetable_id = vegetable.id
-
-            work_name = record.work.strip()
-            if (
-                work_name
-                and db.scalar(select(WorkType).where(WorkType.name == work_name))
-                is None
-            ):
-                db.add(WorkType(name=work_name))
-
-        db.commit()
-
-
-migrate_database()
-
-
 class SVGDataSchema(BaseModel):
     viewBox: str
     elements: list[dict]
@@ -126,6 +77,17 @@ def read_root(request: Request, db: Session = Depends(get_db)):
     vegetables = db.scalars(select(Vegetable).order_by(Vegetable.name)).all()
 
     work_types = db.scalars(select(WorkType).order_by(WorkType.name)).all()
+
+    farms = db.scalars(select(FarmSVG).order_by(FarmSVG.farm_name)).all()
+    farm_data = [
+        {
+            "id": str(farm.id),
+            "farm_name": farm.farm_name,
+            "svg_data": farm.svg_data,
+            # "vegetable_id": farm.vegetable_id,
+        }
+        for farm in farms
+    ]
 
     records = db.scalars(
         select(GardenRecord).order_by(
@@ -171,20 +133,21 @@ def read_root(request: Request, db: Session = Depends(get_db)):
             "today": date.today().isoformat(),
             "vegetables": vegetables,
             "work_types": work_types,
+            "farm": farm_data,
             "grouped_records": grouped_records,
         },
     )
 
 
-@app.get("/farm", response_class=HTMLResponse)
-def read_farm(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="farm.html",
-        context={
-            "title": "家庭菜園の記録 - 農場区画情報",
-        },
-    )
+# @app.get("/farm", response_class=HTMLResponse)
+# def read_farm(request: Request):
+#     return templates.TemplateResponse(
+#         request=request,
+#         name="farm.html",
+#         context={
+#             "title": "家庭菜園の記録 - 農場区画情報",
+#         },
+#     )
 
 
 @app.post("/farm")
@@ -201,21 +164,24 @@ def create_farm(data: FarmSchema, db: Session = Depends(get_db)):
 @app.post("/vegetables")
 def create_vegetable(
     name: str = Form(...),
-    area: str = Form(...),
+    farm_id: uuid.UUID = Form(...),
+    area_id: uuid.UUID = Form(...),
     db: Session = Depends(get_db),
 ):
     name = name.strip()
-    area = area.strip()
 
-    if not name or not area:
-        raise HTTPException(status_code=400, detail="名前とエリアは必須です。")
+    if not name or not farm_id or not area_id:
+        raise HTTPException(
+            status_code=400, detail="名前とファームとエリアは必須です。"
+        )
 
     existing = db.scalar(select(Vegetable).where(Vegetable.name == name))
 
     if existing:
-        existing.area = area
+        existing.farm_id = farm_id
+        existing.area_id = area_id
     else:
-        db.add(Vegetable(name=name, area=area))
+        db.add(Vegetable(name=name, farm_id=farm_id, area_id=area_id))
 
     db.commit()
     return RedirectResponse(url="/", status_code=303)
@@ -238,7 +204,7 @@ def create_work_type(
 @app.post("/records")
 def create_record(
     work_date: date = Form(...),
-    vegetable_id: int = Form(...),
+    vegetable_id: uuid.UUID = Form(...),
     work: str = Form(...),
     memo: str = Form(""),
     harvest_amount: float | None = Form(None),
@@ -284,7 +250,7 @@ def create_record(
 
 
 @app.post("/vegetables/{vegetable_id}/delete")
-def delete_vegetable(vegetable_id: int, db: Session = Depends(get_db)):
+def delete_vegetable(vegetable_id: uuid.UUID, db: Session = Depends(get_db)):
     vegetable = db.get(Vegetable, vegetable_id)
     if vegetable is None:
         raise HTTPException(status_code=400, detail="データがありません。")
@@ -295,7 +261,7 @@ def delete_vegetable(vegetable_id: int, db: Session = Depends(get_db)):
 
 @app.post("/vegetables/{vegetable_id}/records")
 async def update_vegetable(
-    vegetable_id: int, request: Request, db: Session = Depends(get_db)
+    vegetable_id: uuid.UUID, request: Request, db: Session = Depends(get_db)
 ):
     form_data = await request.form()
     rids = form_data.getlist("record_id")
@@ -314,10 +280,3 @@ async def update_vegetable(
             record.harvest_unit = form_data[f"harvest_unit_{rid}"] or None
     db.commit()
     return RedirectResponse(url="/", status_code=303)
-
-
-inspector = inspect(engine)
-
-print(inspector.get_table_names())
-print(inspector.get_columns("farm_svg"))
-print(engine.url)

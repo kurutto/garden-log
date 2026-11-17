@@ -105,23 +105,30 @@
 
       <section class="panel management">
         <h2>畑新規登録</h2>
-<button type="submit" class="secondary-button js-modal-link-item" data-modal-id="js-farm-modal-box">畑を追加</button>
+        <button
+          type="submit"
+          class="js-modal-link-item secondary-button"
+          data-modal-id="js-create-farm-modal-box"
+        >
+          畑を追加
+        </button>
         <h2>野菜の新規登録・エリア変更</h2>
 
-          <a
-            href=""
-            class="js-modal-link-item"
-            data-modal-id="js-farm-modal-box"
-            >動画で詳しく</a
-          >
         <form action="/vegetables" method="post" class="record-form">
           <div class="field">
             <label for="new_vegetable">名前</label>
             <input id="new_vegetable" name="name" maxlength="100" required />
           </div>
           <div class="field">
-            <label for="new_area">エリア</label>
-            <input id="new_area" name="area" maxlength="100" required />
+            <label for="farms">ファーム名</label>
+            <select id="farms" name="farm_id">
+              <option value="">ファームを選択してください</option>
+              {% for item in farm %}
+              <option value="{{ item.id }}">{{ item.farm_name }}</option>
+              {% endfor %}
+            </select>
+            <p id="selected_area_text"></p>
+            <input type="hidden" id="area_id" name="area_id" />
           </div>
           <button type="submit" class="secondary-button">野菜を登録</button>
         </form>
@@ -164,7 +171,6 @@
               method="post"
               class="edit-form"
             >
-
               <button type="button" class="secondary-button edit-btn">
                 編集
               </button>
@@ -182,7 +188,7 @@
 
               {% for record in group.records %}
               <input type="hidden" name="record_id" value="{{ record.id }}" />
-              <div class="history-item"">
+              <div class="history-item">
                 <p class="history-title">
                   {{ record.work }}：<span class="record-data"
                     >{{ record.work_date.strftime("%Y/%m/%d") }}</span
@@ -202,7 +208,11 @@
                   {{ record.work }}メモ：<span class="record-data"
                     >{{ record.memo }}</span
                   ><span class="edit-data">
-                    <textarea id="memo" name="memo_{{ record.id }}" rows="3"></textarea>
+                    <textarea
+                      id="memo"
+                      name="memo_{{ record.id }}"
+                      rows="3"
+                    ></textarea>
                   </span>
                 </p>
                 {% endif %} {% if record.harvest_amount is not none %}
@@ -226,7 +236,10 @@
                         placeholder="数量"
                         value="{{ record.harvest_amount|int if record.harvest_amount == record.harvest_amount|int else record.harvest_amount }}"
                       />
-                      <select id="harvest_unit" name="harvest_unit_{{ record.id }}">
+                      <select
+                        id="harvest_unit"
+                        name="harvest_unit_{{ record.id }}"
+                      >
                         <option value="">単位</option>
                         <option value="株">株</option>
                         <option value="個">個</option>
@@ -264,21 +277,30 @@
       </section>
     </main>
 
-      <div
-        class="modal-box js-modal-box"
-        id="js-farm-modal-box"
-      >
-        <div class="farmArea">
-          <p>畑名：<input type="text" name="farm_name" id="farmName" required /></p>
-          <p>横：<input type="number" name="horizontal" id="farmWidth" /></p>
-          <p>縦：<input type="number" name="vertical" id="farmHeight" /></p>
-          <button id="generateBtn">生成</button>
-          <div id="farmContainer"></div>
-          <button type="button" class="secondary-button" id="addFarmBtn">追加</button>
-        </div>
+    <div class="modal-box js-modal-box" id="js-create-farm-modal-box">
+      <div class="farmArea">
+        <p>
+          畑名：<input type="text" name="farm_name" id="farmName" required />
+        </p>
+        <p>横：<input type="number" name="horizontal" id="farmWidth" /></p>
+        <p>縦：<input type="number" name="vertical" id="farmHeight" /></p>
+        <button id="generateBtn">生成</button>
+        <div id="farmContainer"></div>
+        <button type="button" class="secondary-button" id="addFarmBtn">
+          追加
+        </button>
       </div>
+    </div>
+    <div class="modal-box js-modal-box" id="js-select-farm-modal-box">
+      <div class="farmArea">
+        <div id="selectedFarmContainer"></div>
+        <button type="button" class="secondary-button" id="selectFarmBtn">
+          選択
+        </button>
+      </div>
+    </div>
 
-      <div class="overlay js-overlay"></div>
+    <div class="overlay js-overlay"></div>
     <script>
       const vegetableSelect = document.getElementById("vegetable_id");
       const areaDisplay = document.getElementById("area_display");
@@ -301,9 +323,10 @@
       workSelect.addEventListener("change", updateQuantityField);
       updateQuantityField();
     </script>
-
+    <script id="farm-data" type="application/json">
+      {{ farm | tojson }}
+    </script>
     <script src="/static/script.js"></script>
-    <!-- <script src="/static/modal.js"></script> -->
     <script type="module" src="/static/farm.js"></script>
   </body>
 </html>

@@ -1,15 +1,14 @@
 import { modal } from "./modal.js";
+const closeTxt = "*";
+const createSVGElement = (tag) => {
+  return document.createElementNS("http://www.w3.org/2000/svg", tag);
+};
 (function () {
-  const modalItem = document.querySelector(".js-modal-link-item");
-  const closeTxt = "*";
-  const { modalClose } = modal(modalItem, closeTxt);
+  const modalLinkItem = document.querySelector(".js-modal-link-item");
+  const { modalClose } = modal(modalLinkItem, undefined, closeTxt);
   // const modalClose = modal(modalItem, "");
   const generateBtn = document.getElementById("generateBtn");
   const farmContainer = document.getElementById("farmContainer");
-  const createSVGElement = (tag) => {
-    return document.createElementNS("http://www.w3.org/2000/svg", tag);
-  };
-  let currentObjIdx = undefined;
 
   const farm = createSVGElement("svg");
   let width = 0;
@@ -85,7 +84,6 @@ import { modal } from "./modal.js";
     drugPoint.addEventListener("pointerdown", (event) => {
       isDragging = true;
       drugPoint.setPointerCapture(event.pointerId);
-      currentObjIdx = drugPoint.dataset.id;
     });
     drugPoint.addEventListener("pointermove", (event) => {
       if (!isDragging) return;
@@ -127,9 +125,10 @@ import { modal } from "./modal.js";
     });
   };
   const createElem = (index, left, top, right, bottom) => {
+    const uuid = crypto.randomUUID();
     rects[index] = {};
     rects[index].rect = createSVGElement("rect");
-    rects[index].rect.setAttribute("data-id", index);
+    rects[index].rect.setAttribute("data-id", uuid);
     farm.appendChild(rects[0].rect);
 
     rects[index].left = left;
@@ -141,10 +140,10 @@ import { modal } from "./modal.js";
     rects[index].drugPointRT = createDrugPoint();
     rects[index].drugPointLB = createDrugPoint();
     rects[index].drugPointRB = createDrugPoint();
-    rects[index].drugPointLT.setAttribute("data-id", index);
-    rects[index].drugPointRT.setAttribute("data-id", index);
-    rects[index].drugPointLB.setAttribute("data-id", index);
-    rects[index].drugPointRB.setAttribute("data-id", index);
+    rects[index].drugPointLT.setAttribute("data-id", uuid);
+    rects[index].drugPointRT.setAttribute("data-id", uuid);
+    rects[index].drugPointLB.setAttribute("data-id", uuid);
+    rects[index].drugPointRB.setAttribute("data-id", uuid);
   };
   generateBtn.addEventListener("click", () => {
     farmContainer.innerHTML = "";
@@ -175,8 +174,8 @@ import { modal } from "./modal.js";
         const deleteArea = confirm("削除しますか");
         if (deleteArea) {
           const deleteId = e.target.dataset.id;
-          console.log(deleteId);
-          rects.splice(deleteId, 1);
+          const deleteIndex = rects.findIndex((rect) => rect.id === deleteId);
+          rects.splice(deleteIndex, 1);
           const deleteItems = farm.querySelectorAll(`[data-id="${deleteId}"]`);
           deleteItems.forEach((item) => item.remove());
         } else {
@@ -261,6 +260,50 @@ import { modal } from "./modal.js";
     });
     modalClose();
   };
+
   const addFarmBtn = document.getElementById("addFarmBtn");
   addFarmBtn.addEventListener("click", addFarm);
+})();
+
+(function () {
+  const modalItem = document.getElementById("js-select-farm-modal-box");
+  const { modalOpen, modalClose } = modal(undefined, modalItem, closeTxt);
+  const farms = document.getElementById("farms");
+  const selectedFarmContainer = document.getElementById(
+    "selectedFarmContainer",
+  );
+  const selectedArea = document.getElementById("selected_area");
+  const selectedAreaText = document.getElementById("selected_area_text");
+  const farmElement = document.getElementById("farm-data");
+  const farmsData = JSON.parse(farmElement.textContent);
+  let farmId;
+  let farmData;
+  const selectFarm = () => {
+    modalOpen();
+    selectedFarmContainer.innerHTML = "";
+    farmId = farms.value;
+    farmData = farmsData.find((item) => item.id === farmId);
+    console.log("farmId", farmId);
+
+    const selectedFarm = createSVGElement("svg");
+    selectedFarm.setAttribute("viewBox", farmData.svg_data.viewBox);
+    farmData.svg_data.elements.forEach((elem) => {
+      const tag = createSVGElement(elem.tag);
+      Object.entries(elem.attributes).forEach(([key, value]) => {
+        tag.setAttribute(key, value);
+      });
+      selectedFarm.appendChild(tag);
+    });
+    selectedFarmContainer.appendChild(selectedFarm);
+    console.log(document.body.className);
+  };
+  const inputAreaId = document.getElementById("area_id");
+  selectedFarmContainer.addEventListener("click", (e) => {
+    const areaId = e.target.dataset.id;
+    if (!areaId) return;
+    inputAreaId.value = areaId;
+    selectedAreaText.textContent = `ファーム名：${farmData.farm_name}、エリアID：${areaId}`;
+    modalClose();
+  });
+  farms.addEventListener("change", selectFarm);
 })();

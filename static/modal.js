@@ -1,45 +1,54 @@
-export const modal = (modalItem, closeTxt) => {
+export const modal = (modalLinkItem, modalItem, closeTxt) => {
   const body = document.body;
   const overlay = document.querySelector(".js-overlay");
-  if (!modalItem) return;
-  const target = document.getElementById(modalItem.dataset.modalId);
+  const target = modalItem
+    ? modalItem
+    : document.getElementById(modalLinkItem.dataset.modalId);
+
   let close;
   let scrollPos;
 
   const modalOpen = () => {
-    modalItem.addEventListener("click", (e) => {
-      e.preventDefault();
-      scrollPos = window.pageYOffset || document.documentElement.scrollTop;
-      body.classList.add("js-modal-open");
-      body.style.top = `-${scrollPos}px`;
-      close = document.createElement("div");
-      close.setAttribute("class", "modal-close js-modal-close");
-      close.textContent = closeTxt;
-      target.append(close);
-      const closeBtns = target.querySelectorAll(".js-modal-close");
-      target.classList.add("js-open");
-      overlay.classList.add("js-open");
-      overlay.addEventListener(
+    console.log("modalOpen実行");
+    scrollPos = window.pageYOffset || document.documentElement.scrollTop;
+    body.classList.add("js-modal-open");
+    body.style.top = `-${scrollPos}px`;
+    close = document.createElement("div");
+    close.setAttribute("class", "modal-close js-modal-close");
+    close.textContent = closeTxt;
+    target.append(close);
+    const closeBtns = target.querySelectorAll(".js-modal-close");
+    target.classList.add("js-open");
+    overlay.classList.add("js-open");
+    overlay.addEventListener(
+      "click",
+      () => {
+        modalClose();
+      },
+      { once: true },
+    );
+    closeBtns.forEach((closeBtn) => {
+      closeBtn.addEventListener(
         "click",
         () => {
           modalClose();
         },
         { once: true },
       );
-      closeBtns.forEach((closeBtn) => {
-        closeBtn.addEventListener(
-          "click",
-          () => {
-            modalClose();
-          },
-          { once: true },
-        );
-      });
     });
   };
-  // modalClose(target, scrollPos);
+
+  if (modalLinkItem) {
+    modalLinkItem.addEventListener("click", (e) => {
+      e.preventDefault();
+      modalOpen();
+    });
+  }
   const modalClose = () => {
+    console.log("modalClose実行");
+    console.log(body.classList.contains("js-modal-open"));
     body.classList.remove("js-modal-open");
+    console.log(body.classList.contains("js-modal-open"));
     body.style.top = "0px";
     window.scrollTo({
       top: scrollPos,
@@ -54,6 +63,5 @@ export const modal = (modalItem, closeTxt) => {
       overlay.classList.remove("js-open", "fade-out");
     }, 500);
   };
-  modalOpen();
-  return { modalClose };
+  return { modalOpen, modalClose };
 };

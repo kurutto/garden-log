@@ -127,8 +127,10 @@
               <option value="{{ item.id }}">{{ item.farm_name }}</option>
               {% endfor %}
             </select>
+            <div id="selectedFarmContainer"></div>
             <p id="selected_area_text"></p>
             <input type="hidden" id="area_id" name="area_id" />
+            <input type="hidden" id="farm_svg" name="farm_svg" />
           </div>
           <button type="submit" class="secondary-button">野菜を登録</button>
         </form>
@@ -288,14 +290,6 @@
         <div id="farmContainer"></div>
         <button type="button" class="secondary-button" id="addFarmBtn">
           追加
-        </button>
-      </div>
-    </div>
-    <div class="modal-box js-modal-box" id="js-select-farm-modal-box">
-      <div class="farmArea">
-        <div id="selectedFarmContainer"></div>
-        <button type="button" class="secondary-button" id="selectFarmBtn">
-          選択
         </button>
       </div>
     </div>

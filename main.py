@@ -3,6 +3,7 @@ from pathlib import Path
 from pydantic import BaseModel
 from sqlalchemy import JSON
 import uuid
+import json
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -166,9 +167,12 @@ def create_vegetable(
     name: str = Form(...),
     farm_id: uuid.UUID = Form(...),
     area_id: uuid.UUID = Form(...),
+    farm_svg: str = Form(...),
     db: Session = Depends(get_db),
 ):
     name = name.strip()
+    farm_data = json.loads(farm_svg)
+    svg_data = farm_data["svgData"]
 
     if not name or not farm_id or not area_id:
         raise HTTPException(
@@ -182,6 +186,9 @@ def create_vegetable(
         existing.area_id = area_id
     else:
         db.add(Vegetable(name=name, farm_id=farm_id, area_id=area_id))
+
+    farm = db.scalar(select(FarmSVG).where(FarmSVG.id == farm_id))
+    farm.svg_data = svg_data
 
     db.commit()
     return RedirectResponse(url="/", status_code=303)

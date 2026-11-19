@@ -1,7 +1,5 @@
 from datetime import date
-from pathlib import Path
 from pydantic import BaseModel
-from sqlalchemy import JSON
 import uuid
 import json
 
@@ -10,26 +8,14 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import (
-    Date,
-    Float,
-    ForeignKey,
-    String,
-    Text,
     create_engine,
-    inspect,
     select,
-    text,
 )
 from sqlalchemy.orm import (
-    DeclarativeBase,
-    Mapped,
     Session,
-    mapped_column,
-    relationship,
     sessionmaker,
 )
 from models import (
-    Base,
     Vegetable,
     WorkType,
     GardenRecord,
@@ -85,7 +71,6 @@ def read_root(request: Request, db: Session = Depends(get_db)):
             "id": str(farm.id),
             "farm_name": farm.farm_name,
             "svg_data": farm.svg_data,
-            # "vegetable_id": farm.vegetable_id,
         }
         for farm in farms
     ]

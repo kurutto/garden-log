@@ -40,7 +40,8 @@
               {% for vegetable in vegetables %}
               <option
                 value="{{ vegetable.id }}"
-                data-area="{{ vegetable.area }}"
+                data-farm="{{ vegetable.farm_id }}"
+                data-area="{{ vegetable.area_id }}"
               >
                 {{ vegetable.name }}
               </option>
@@ -50,12 +51,7 @@
 
           <div class="field">
             <label for="area_display">エリア</label>
-            <input
-              type="text"
-              id="area_display"
-              readonly
-              placeholder="野菜を選ぶと表示されます"
-            />
+            <div id="record_area"></div>
           </div>
 
           <div class="field">
@@ -295,32 +291,9 @@
     </div>
 
     <div class="overlay js-overlay"></div>
-    <script>
-      const vegetableSelect = document.getElementById("vegetable_id");
-      const areaDisplay = document.getElementById("area_display");
-      const workSelect = document.getElementById("work");
-      const amountInput = document.getElementById("harvest_amount");
-      const unitSelect = document.getElementById("harvest_unit");
-      const quantityHelp = document.getElementById("quantity-help");
-
-      vegetableSelect.addEventListener("change", () => {
-        const option = vegetableSelect.selectedOptions[0];
-        areaDisplay.value = option?.dataset.area || "";
-      });
-
-      function updateQuantityField() {
-        const isHarvest = workSelect.value === "収穫";
-        amountInput.required = isHarvest;
-        quantityHelp.hidden = !isHarvest;
-      }
-
-      workSelect.addEventListener("change", updateQuantityField);
-      updateQuantityField();
-    </script>
     <script id="farm-data" type="application/json">
       {{ farm | tojson }}
     </script>
-    <script src="/static/script.js"></script>
-    <script type="module" src="/static/farm.js"></script>
+    <script type="module" src="/static/script.js"></script>
   </body>
 </html>

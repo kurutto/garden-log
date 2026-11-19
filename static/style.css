@@ -307,3 +307,6 @@ small[hidden] {
 .farm{
   padding: 4vw;
 }
+.is-current{
+  fill: #ff0000;
+}

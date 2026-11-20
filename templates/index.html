@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ title }}</title>
-    <link rel="stylesheet" href="/static/style.css" />
-    <link rel="stylesheet" href="/static/modal.css" />
-    <link rel="stylesheet" href="/static/farm.css" />
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <link rel="stylesheet" href="/static/css/modal.css" />
+    <link rel="stylesheet" href="/static/css/farm.css" />
   </head>
   <body>
     <header class="header">
@@ -56,7 +56,7 @@
 
           <div class="field">
             <label for="work">作業内容</label>
-            <select id="work" name="work" required>
+            <select id="work" name="work_name" required>
               <option value="">作業内容を選択してください</option>
               {% for item in work_types %}
               <option value="{{ item.name }}">{{ item.name }}</option>
@@ -119,7 +119,7 @@
             <label for="farms">ファーム名</label>
             <select id="farms" name="farm_id">
               <option value="">ファームを選択してください</option>
-              {% for item in farm %}
+              {% for item in farms %}
               <option value="{{ item.id }}">{{ item.farm_name }}</option>
               {% endfor %}
             </select>
@@ -172,11 +172,7 @@
               <button type="button" class="secondary-button edit-btn">
                 編集
               </button>
-              <button
-                type="submit"
-                class="secondary-button submit-btn"
-                data-vegetable-id="{{ group.vegetable.id }}"
-              >
+              <button type="submit" class="secondary-button submit-btn">
                 保存
               </button>
               <button type="button" class="secondary-button cancel-btn">
@@ -188,7 +184,7 @@
               <input type="hidden" name="record_id" value="{{ record.id }}" />
               <div class="history-item">
                 <p class="history-title">
-                  {{ record.work }}：<span class="record-data"
+                  {{ record.work_name }}：<span class="record-data"
                     >{{ record.work_date.strftime("%Y/%m/%d") }}</span
                   ><span class="edit-data"
                     ><input
@@ -203,7 +199,7 @@
 
                 {% if record.memo %}
                 <p class="history-detail">
-                  {{ record.work }}メモ：<span class="record-data"
+                  {{ record.work_name }}メモ：<span class="record-data"
                     >{{ record.memo }}</span
                   ><span class="edit-data">
                     <textarea
@@ -215,7 +211,7 @@
                 </p>
                 {% endif %} {% if record.harvest_amount is not none %}
                 <div class="history-detail">
-                  {{ record.work }}数量：
+                  {{ record.work_name }}数量：
                   <span class="record-data"
                     >{{ record.harvest_amount|int if record.harvest_amount ==
                     record.harvest_amount|int else record.harvest_amount
@@ -292,8 +288,8 @@
 
     <div class="overlay js-overlay"></div>
     <script id="farm-data" type="application/json">
-      {{ farm | tojson }}
+      {{ farms | tojson }}
     </script>
-    <script type="module" src="/static/script.js"></script>
+    <script type="module" src="/static/js/script.js"></script>
   </body>
 </html>

@@ -1,5 +1,9 @@
-from datetime import date
-import uuid
+from database import Base
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+)
 from sqlalchemy import (
     Date,
     Float,
@@ -9,16 +13,8 @@ from sqlalchemy import (
     JSON,
     Uuid,
 )
-from sqlalchemy.orm import (
-    DeclarativeBase,
-    Mapped,
-    mapped_column,
-    relationship,
-)
-
-
-class Base(DeclarativeBase):
-    pass
+from datetime import date
+import uuid
 
 
 class Vegetable(Base):
@@ -63,7 +59,7 @@ class GardenRecord(Base):
         nullable=True,
     )
 
-    work: Mapped[str] = mapped_column(String(100), nullable=False)
+    work_name: Mapped[str] = mapped_column(String(100), nullable=False)
     memo: Mapped[str] = mapped_column(Text, default="", nullable=False)
     harvest_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
     harvest_unit: Mapped[str | None] = mapped_column(String(20), nullable=True)

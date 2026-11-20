@@ -107,8 +107,7 @@ def create_record(
     db.commit()
 
 
-async def update_vegetable(vegetable_id: uuid.UUID, request: Request, db: Session):
-    form_data = await request.form()
+def update_vegetable(vegetable_id: uuid.UUID, form_data, db: Session):
     rids = form_data.getlist("record_id")
     for rid in rids:
         record = get_record(uuid.UUID(rid), db)

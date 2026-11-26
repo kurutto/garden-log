@@ -274,7 +274,7 @@ export const CreateDeleteElemWithinSVG = (svg, width, height, rects) => {
 };
 
 // svgデータをデータベースに送る形に作成
-export const createSvgData = (farmName, svg) => {
+export const createSvgData = (name, svg) => {
   const svgData = {
     viewBox: svg.getAttribute("viewBox"),
     elements: [...svg.querySelectorAll("rect")].map((elem) => {
@@ -286,7 +286,7 @@ export const createSvgData = (farmName, svg) => {
     }),
   };
   return {
-    farmName,
+    name,
     svgData,
   };
 };

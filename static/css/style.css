@@ -178,7 +178,7 @@ small[hidden] {
   font-size: 13px;
 }
 
-.vegetable-tag {
+.cultivation-tag {
   padding: 2px 10px;
   color: #355535;
   background: #eaf2e5;
@@ -260,7 +260,7 @@ small[hidden] {
   box-shadow: none;
 }
 
-.vegetable-title {
+.cultivation-title {
   margin: 0 0 8px;
   font-size: 14px;
   font-weight: 400;

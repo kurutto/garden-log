@@ -27,39 +27,48 @@
             <input
               type="date"
               id="work_date"
-              name="work_date"
+              name="date"
               value="{{ today }}"
               required
             />
           </div>
 
           <div class="field">
-            <label for="vegetable_id">名前</label>
-            <select id="vegetable_id" name="vegetable_id" required>
+            <label for="cultivation_id">名前</label>
+            <select id="cultivation_id" name="cultivation_id" required>
               <option value="">野菜を選択してください</option>
-              {% for vegetable in vegetables %}
+              {% for cultivation in cultivations %}
               <option
-                value="{{ vegetable.id }}"
-                data-farm="{{ vegetable.farm_id }}"
-                data-area="{{ vegetable.area_id }}"
+                value="{{ cultivation.id }}"
+                data-variety="{{ cultivation.variety_id }}"
+                data-farm="{{ cultivation.farm_id }}"
+                data-area="{{ cultivation.area_id }}"
               >
-                {{ vegetable.name }}
+                {{ cultivation.name }}
               </option>
               {% endfor %}
             </select>
           </div>
 
           <div class="field">
-            <label for="area_display">エリア</label>
-            <div id="record_area"></div>
+            <label for="variety">品種</label>
+            <p id="variety">野菜を選択すると表示されます</p>
+          </div>
+          <div class="field">
+            <label for="record_area">エリア</label>
+            <p id="record_area">野菜を選択すると表示されます</p>
+          </div>
+          <div class="field">
+            <label>エリア面積</label>
+            <p id="area_size">野菜を選択すると表示されます</p>
           </div>
 
           <div class="field">
             <label for="work">作業内容</label>
-            <select id="work" name="work_name" required>
+            <select id="work" name="work_type_id" required>
               <option value="">作業内容を選択してください</option>
               {% for item in work_types %}
-              <option value="{{ item.name }}">{{ item.name }}</option>
+              <option value="{{ item.id }}">{{ item.name }}</option>
               {% endfor %}
             </select>
           </div>
@@ -108,19 +117,47 @@
         >
           畑を追加
         </button>
+        <h2>野菜の品種新規登録</h2>
+
+        <form action="/varieties" method="post" class="record-form">
+          <div class="field">
+            <label for="new_variety">品種</label>
+            <input id="new_variety" name="name" maxlength="100" required />
+          </div>
+          <button type="submit" class="secondary-button">品種を登録</button>
+        </form>
         <h2>野菜の新規登録・エリア変更</h2>
 
-        <form action="/vegetables" method="post" class="record-form">
+        <form action="/cultivations" method="post" class="record-form">
           <div class="field">
-            <label for="new_vegetable">名前</label>
-            <input id="new_vegetable" name="name" maxlength="100" required />
+            <label for="new_cultivation">名前</label>
+            <input id="new_cultivation" name="name" maxlength="100" required />
           </div>
           <div class="field">
-            <label for="farms">ファーム名</label>
-            <select id="farms" name="farm_id">
+            <label for="variety_id">品種</label>
+
+            <select id="variety_id" name="variety_id">
+              <option value="">品種を選択してください</option>
+              {% for item in varieties %}
+              <option value="{{ item.id }}">{{ item.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="area_size">エリア面積</label>
+            <input
+              id="area_size"
+              name="area_size"
+              maxlength="100"
+              required
+            />m<sup>2</sup>
+          </div>
+          <div class="field">
+            <label for="farm_id">ファーム名</label>
+            <select id="farm_id" name="farm_id">
               <option value="">ファームを選択してください</option>
               {% for item in farms %}
-              <option value="{{ item.id }}">{{ item.farm_name }}</option>
+              <option value="{{ item.id }}">{{ item.name }}</option>
               {% endfor %}
             </select>
             <div id="selectedFarmContainer"></div>
@@ -158,14 +195,14 @@
           {% for group in grouped_records %}
           <article class="record-card">
             <form
-              action="/vegetables/{{ group.vegetable.id }}/delete"
+              action="/cultivations/{{ group.cultivation.id }}/delete"
               method="post"
               onsubmit="return confirm('この野菜の記録をすべて削除しますか？');"
             >
               <button type="submit" class="btn-delete">×</button>
             </form>
             <form
-              action="/vegetables/{{ group.vegetable.id }}/records"
+              action="/cultivations/{{ group.cultivation.id }}/records"
               method="post"
               class="edit-form"
             >
@@ -178,19 +215,19 @@
               <button type="button" class="secondary-button cancel-btn">
                 キャンセル
               </button>
-              <h3 class="vegetable-title">{{ group.vegetable.name }}</h3>
+              <h3 class="cultivation-title">{{ group.cultivation.name }}</h3>
 
               {% for record in group.records %}
               <input type="hidden" name="record_id" value="{{ record.id }}" />
               <div class="history-item">
                 <p class="history-title">
-                  {{ record.work_name }}：<span class="record-data"
-                    >{{ record.work_date.strftime("%Y/%m/%d") }}</span
+                  {{ record.work_type.name }}：<span class="record-data"
+                    >{{ record.date.strftime("%Y/%m/%d") }}</span
                   ><span class="edit-data"
                     ><input
                       type="date"
                       id="work_date"
-                      name="work_date_{{ record.id }}"
+                      name="date_{{ record.id }}"
                       value="{{ today }}"
                       required
                     />
@@ -273,9 +310,7 @@
 
     <div class="modal-box js-modal-box" id="js-create-farm-modal-box">
       <div class="farmArea">
-        <p>
-          畑名：<input type="text" name="farm_name" id="farmName" required />
-        </p>
+        <p>畑名：<input type="text" name="name" id="name" required /></p>
         <p>横：<input type="number" name="horizontal" id="farmWidth" /></p>
         <p>縦：<input type="number" name="vertical" id="farmHeight" /></p>
         <button id="generateBtn">生成</button>
@@ -289,6 +324,25 @@
     <div class="overlay js-overlay"></div>
     <script id="farm-data" type="application/json">
       {{ farms | tojson }}
+    </script>
+    <script>
+      const varietiesData = [
+        {% for variety in varieties %}
+          {
+            "id": "{{ variety.id }}",
+            "name": {{ variety.name | tojson }}
+          }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ];
+
+      const cultivationsData = [
+        {% for cultivation in cultivations %}
+          {
+            "id": "{{ cultivation.id }}",
+            "area_size": {{ cultivation.area_size | tojson }}
+          }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ];
     </script>
     <script type="module" src="/static/js/script.js"></script>
   </body>

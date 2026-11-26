@@ -10,12 +10,14 @@ import crud
 router = APIRouter()
 
 
-@router.post("/vegetables")
-def create_vegetable(
+@router.post("/cultivations")
+def create_cultivation(
     name: str = Form(...),
+    variety_id: uuid.UUID = Form(...),
     farm_id: uuid.UUID = Form(...),
     area_id: uuid.UUID = Form(...),
     farm_svg: str = Form(...),
+    area_size: float = Form(...),
     db: Session = Depends(get_db),
 ):
     name = name.strip()
@@ -29,14 +31,16 @@ def create_vegetable(
     if not farm_id or not area_id:
         raise HTTPException(status_code=400, detail="ファームとエリアは必須です。")
     try:
-        crud.create_vegetable(name, farm_id, area_id, svg_data, db)
+        crud.create_cultivation(
+            name, variety_id, farm_id, area_id, svg_data, area_size, db
+        )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
     return RedirectResponse(url="/", status_code=303)
 
 
-@router.post("/vegetables/{vegetable_id}/delete")
-def delete_vegetable(vegetable_id: uuid.UUID, db: Session = Depends(get_db)):
-    crud.delete_vegetable(vegetable_id, db)
+@router.post("/cultivations/{cultivation_id}/delete")
+def delete_cultivation(cultivation_id: uuid.UUID, db: Session = Depends(get_db)):
+    crud.delete_cultivation(cultivation_id, db)
     return RedirectResponse(url="/", status_code=303)

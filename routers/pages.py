@@ -16,15 +16,16 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
 def read_root(request: Request, db: Session = Depends(get_db)):
-    vegetables = crud.get_vegetables(db)
+    cultivations = crud.get_cultivations(db)
+    varieties = crud.get_varieties(db)
     work_types = crud.get_work_types(db)
     farms = crud.get_farms(db)
     records = crud.get_records(db)
 
-    farm_data = [
+    farms = [
         {
             "id": str(farm.id),
-            "farm_name": farm.farm_name,
+            "name": farm.name,
             "svg_data": farm.svg_data,
         }
         for farm in farms
@@ -33,20 +34,20 @@ def read_root(request: Request, db: Session = Depends(get_db)):
     # 野菜ごとに作業記録をまとめる
     grouped_records = []
 
-    for vegetable in vegetables:
-        vegetable_records = sorted(
-            [record for record in records if record.vegetable_id == vegetable.id],
-            key=lambda record: (record.work_date, record.id),
+    for cultivation in cultivations:
+        cultivation_records = sorted(
+            [record for record in records if record.cultivation_id == cultivation.id],
+            key=lambda record: (record.date, record.id),
         )
 
-        if not vegetable_records:
+        if not cultivation_records:
             continue
 
         # 単位ごとに収穫量を合計する
         harvest_totals = {}
 
-        for record in vegetable_records:
-            if record.work_name != "収穫" or record.harvest_amount is None:
+        for record in cultivation_records:
+            if record.work_type.name != "収穫" or record.harvest_amount is None:
                 continue
 
             unit = record.harvest_unit or "単位なし"
@@ -54,8 +55,8 @@ def read_root(request: Request, db: Session = Depends(get_db)):
 
         grouped_records.append(
             {
-                "vegetable": vegetable,
-                "records": vegetable_records,
+                "cultivation": cultivation,
+                "records": cultivation_records,
                 "harvest_totals": harvest_totals,
             }
         )
@@ -66,9 +67,10 @@ def read_root(request: Request, db: Session = Depends(get_db)):
         context={
             "title": "家庭菜園の記録",
             "today": date.today().isoformat(),
-            "vegetables": vegetables,
+            "cultivations": cultivations,
+            "varieties": varieties,
             "work_types": work_types,
-            "farms": farm_data,
+            "farms": farms,
             "grouped_records": grouped_records,
         },
     )

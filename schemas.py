@@ -7,5 +7,5 @@ class SVGDataSchema(BaseModel):
 
 
 class FarmSchema(BaseModel):
-    farmName: str
+    name: str
     svgData: SVGDataSchema

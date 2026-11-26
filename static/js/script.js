@@ -13,16 +13,20 @@ import { modal } from "./modal.js";
 const closeTxt = "*";
 (function () {
   // 作業記録エリアのフォームをコントロール
-  const vegetableSelect = document.getElementById("vegetable_id");
+  const cultivationSelect = document.getElementById("cultivation_id");
   const workSelect = document.getElementById("work");
   const amountInput = document.getElementById("harvest_amount");
   const quantityHelp = document.getElementById("quantity-help");
   const recordArea = document.getElementById("record_area");
+  const variety = document.getElementById("variety");
+  const areaSize = document.getElementById("area_size");
 
-  vegetableSelect.addEventListener("change", () => {
+  cultivationSelect.addEventListener("change", () => {
     recordArea.textContent = "";
-    const option = vegetableSelect.selectedOptions[0];
+    const option = cultivationSelect.selectedOptions[0];
+    const varietyId = option?.dataset.variety;
     const farmId = option?.dataset.farm;
+    console.log("varietyId", varietyId);
     const areaId = option?.dataset.area;
     const farmData = getFarmData(farmsData, farmId);
     CreateFarm(recordArea, farmData);
@@ -32,6 +36,12 @@ const closeTxt = "*";
         elem.classList.add("is-current");
       }
     });
+    variety.textContent = varietiesData.find(
+      (variety) => variety.id === varietyId,
+    ).name;
+    areaSize.textContent = cultivationsData.find(
+      (cultivation) => cultivationSelect.value === cultivation.id,
+    ).area_size;
   });
 
   function updateQuantityField() {
@@ -119,10 +129,10 @@ const closeTxt = "*";
 
   //データベースにsvgデータを保存
   const addFarm = () => {
-    const farmName = document.querySelector("#farmName");
-    const farmNameValue = farmName.value;
-    const data = createSvgData(farmNameValue, farm);
-    fetch("/farm", {
+    const name = document.querySelector("#name");
+    const nameValue = name.value;
+    const data = createSvgData(nameValue, farm);
+    fetch("/farms", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -138,7 +148,7 @@ const closeTxt = "*";
 
 // 野菜新規登録時のエリア指定・変更
 (function () {
-  const farms = document.getElementById("farms");
+  const farmId = document.getElementById("farm_id");
   const selectedFarmContainer = document.getElementById(
     "selectedFarmContainer",
   );
@@ -147,8 +157,8 @@ const closeTxt = "*";
   let farmData;
   const selectFarm = () => {
     selectedFarmContainer.innerHTML = "";
-    const farmId = farms.value;
-    farmData = getFarmData(farmsData, farmId);
+    const selectedFarmId = farmId.value;
+    farmData = getFarmData(farmsData, selectedFarmId);
     const { farmSVG, width, height, rects } = CreateFarm(
       selectedFarmContainer,
       farmData,
@@ -168,8 +178,8 @@ const closeTxt = "*";
     const svg = selectedFarmContainer.querySelector("svg");
     if (!areaId) return;
     inputAreaId.value = areaId;
-    inputFarmSvg.value = JSON.stringify(createSvgData(farmData.farm_name, svg));
-    selectedAreaText.textContent = `ファーム名：${farmData.farm_name}、エリアID：${areaId}`;
+    inputFarmSvg.value = JSON.stringify(createSvgData(farmData.name, svg));
+    selectedAreaText.textContent = `ファームID：${farmData.farm_id}、エリアID：${areaId}`;
   });
-  farms.addEventListener("change", selectFarm);
+  farmId.addEventListener("change", selectFarm);
 })();

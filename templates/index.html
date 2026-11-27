@@ -74,17 +74,17 @@
           </div>
 
           <div class="field">
-            <label for="harvest_amount">数量</label>
+            <label for="amount">数量</label>
             <div class="harvest-inputs">
               <input
                 type="number"
-                id="harvest_amount"
-                name="harvest_amount"
+                id="amount"
+                name="amount"
                 min="0"
                 step="any"
                 placeholder="数量"
               />
-              <select id="harvest_unit" name="harvest_unit">
+              <select id="unit" name="unit">
                 <option value="">単位</option>
                 <option value="株">株</option>
                 <option value="個">個</option>
@@ -169,6 +169,10 @@
         </form>
 
         <h2>作業内容の新規登録</h2>
+        <p>
+          既存作業内容： {% for work_type in work_types %} {{work_type.name}} {%
+          endfor %}
+        </p>
         <form action="/work-types" method="post" class="record-form">
           <div class="field">
             <label for="new_work">作業内容</label>
@@ -246,31 +250,25 @@
                     ></textarea>
                   </span>
                 </p>
-                {% endif %} {% if record.harvest_amount is not none %}
+                {% endif %} {% if record.amount is not none %}
                 <div class="history-detail">
                   {{ record.work_name }}数量：
                   <span class="record-data"
-                    >{{ record.harvest_amount|int if record.harvest_amount ==
-                    record.harvest_amount|int else record.harvest_amount
-                    }}</span
-                  ><span class="record-data"
-                    >{{ record.harvest_unit or "" }}</span
-                  >
+                    >{{ record.amount|int if record.amount == record.amount|int
+                    else record.amount }}</span
+                  ><span class="record-data">{{ record.unit or "" }}</span>
                   <div class="edit-data">
                     <div class="harvest-inputs">
                       <input
                         type="number"
-                        id="harvest_amount"
-                        name="harvest_amount_{{ record.id }}"
+                        id="amount"
+                        name="amount_{{ record.id }}"
                         min="0"
                         step="any"
                         placeholder="数量"
-                        value="{{ record.harvest_amount|int if record.harvest_amount == record.harvest_amount|int else record.harvest_amount }}"
+                        value="{{ record.amount|int if record.amount == record.amount|int else record.harvest_amount }}"
                       />
-                      <select
-                        id="harvest_unit"
-                        name="harvest_unit_{{ record.id }}"
-                      >
+                      <select id="unit" name="unit_{{ record.id }}">
                         <option value="">単位</option>
                         <option value="株">株</option>
                         <option value="個">個</option>

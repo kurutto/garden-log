@@ -15,7 +15,7 @@ const closeTxt = "*";
   // 作業記録エリアのフォームをコントロール
   const cultivationSelect = document.getElementById("cultivation_id");
   const workSelect = document.getElementById("work");
-  const amountInput = document.getElementById("harvest_amount");
+  const amountInput = document.getElementById("amount");
   const quantityHelp = document.getElementById("quantity-help");
   const recordArea = document.getElementById("record_area");
   const variety = document.getElementById("variety");
@@ -26,7 +26,6 @@ const closeTxt = "*";
     const option = cultivationSelect.selectedOptions[0];
     const varietyId = option?.dataset.variety;
     const farmId = option?.dataset.farm;
-    console.log("varietyId", varietyId);
     const areaId = option?.dataset.area;
     const farmData = getFarmData(farmsData, farmId);
     CreateFarm(recordArea, farmData);

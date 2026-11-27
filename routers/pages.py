@@ -47,11 +47,15 @@ def read_root(request: Request, db: Session = Depends(get_db)):
         harvest_totals = {}
 
         for record in cultivation_records:
-            if record.work_type.name != "収穫" or record.harvest_amount is None:
+            if (
+                record.work_type is None
+                or record.work_type.name not in ["収穫（数量)", "収穫（重量)"]
+                or record.amount is None
+            ):
                 continue
 
-            unit = record.harvest_unit or "単位なし"
-            harvest_totals[unit] = harvest_totals.get(unit, 0) + record.harvest_amount
+            unit = record.unit or "単位なし"
+            harvest_totals[unit] = harvest_totals.get(unit, 0) + record.amount
 
         grouped_records.append(
             {

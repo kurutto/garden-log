@@ -94,8 +94,8 @@ class Records(Base):
         ForeignKey("work_types.id", ondelete="SET NULL"), nullable=True
     )
     memo: Mapped[str | None] = mapped_column(Text, default="", nullable=True)
-    harvest_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
-    harvest_unit: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    amount: Mapped[float | None] = mapped_column(Float, nullable=True)
+    unit: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     cultivation: Mapped[Cultivations | None] = relationship(back_populates="records")
     work_type: Mapped["WorkTypes"] = relationship(back_populates="records")

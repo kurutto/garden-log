@@ -107,8 +107,8 @@ def create_record(
     cultivation_id: uuid.UUID,
     work_type_id: str,
     memo: str,
-    harvest_amount: float | None,
-    harvest_unit: str | None,
+    amount: float | None,
+    unit: str | None,
     db: Session,
 ):
     db.add(
@@ -117,8 +117,8 @@ def create_record(
             cultivation_id=cultivation_id,
             work_type_id=work_type_id,
             memo=memo,
-            harvest_amount=harvest_amount,
-            harvest_unit=harvest_unit,
+            amount=amount,
+            unit=unit,
         )
     )
     db.commit()
@@ -135,10 +135,10 @@ def update_cultivation(cultivation_id: uuid.UUID, form_data, db: Session):
             record.date = date.fromisoformat(form_data[f"date_{rid}"])
         if f"memo_{rid}" in form_data:
             record.memo = form_data[f"memo_{rid}"].strip()
-        if f"harvest_amount_{rid}" in form_data:
-            record.harvest_amount = float(form_data[f"harvest_amount_{rid}"]) or None
-        if f"harvest_unit_{rid}" in form_data:
-            record.harvest_unit = form_data[f"harvest_unit_{rid}"] or None
+        if f"amount_{rid}" in form_data:
+            record.amount = float(form_data[f"amount_{rid}"]) or None
+        if f"unit_{rid}" in form_data:
+            record.unit = form_data[f"unit_{rid}"] or None
     db.commit()
 
 

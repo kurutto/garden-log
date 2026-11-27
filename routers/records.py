@@ -16,8 +16,8 @@ def create_record(
     cultivation_id: uuid.UUID = Form(...),
     work_type_id: uuid.UUID = Form(...),
     memo: str = Form(""),
-    harvest_amount: float | None = Form(None),
-    harvest_unit: str | None = Form(None),
+    amount: float | None = Form(None),
+    unit: str | None = Form(None),
     db: Session = Depends(get_db),
 ):
     cultivation = crud.get_cultivation(cultivation_id, db)
@@ -28,7 +28,7 @@ def create_record(
     if not work_type_id:
         raise HTTPException(status_code=400, detail="作業内容は必須です。")
 
-    if harvest_amount is not None and harvest_amount < 0:
+    if amount is not None and amount < 0:
         raise HTTPException(status_code=400, detail="数量は0以上にしてください。")
 
     crud.create_record(
@@ -36,8 +36,8 @@ def create_record(
         cultivation_id,
         work_type_id,
         memo,
-        harvest_amount,
-        harvest_unit,
+        amount,
+        unit,
         db,
     )
 
